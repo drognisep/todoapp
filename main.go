@@ -65,19 +65,21 @@ func main() {
 
 	w.SetContent(content)
 	w.SetCloseIntercept(func() {
-		dialog.ShowConfirm("Save?", "Do you want to save before quitting?", func(doSave bool) {
-			if doSave {
-				saveData(taskList, w)
-			}
-			w.Close()
-		}, w)
+		saveData(taskList, w)
+		w.Close()
 	})
 
 	w.ShowAndRun()
 }
 
 func saveData(taskList *view.TaskList, w fyne.Window) {
+	lbl := widget.NewLabel("Saving...")
+	inf := widget.NewProgressBarInfinite()
+	content := container.NewVBox(lbl, inf)
+	popup := widget.NewModalPopUp(content, w.Canvas())
 	tasks := taskList.Tasks()
+	popup.Show()
+	defer popup.Hide()
 	if err := data.SaveTaskData(tasks); err != nil {
 		dialog.ShowError(err, w)
 	}
