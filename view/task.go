@@ -22,9 +22,9 @@ type TaskView struct {
 	renderer *treeViewRenderer
 }
 
-func PrototypeTaskView(w fyne.Window, parent fyne.CanvasObject) *TaskView {
+func PrototypeTaskView(ctx *UiCtx, parent fyne.CanvasObject) *TaskView {
 	view := &TaskView{
-		window: w,
+		window: ctx.MainWindow,
 		parent: parent,
 	}
 	view.ExtendBaseWidget(view)
@@ -74,7 +74,7 @@ type treeViewRenderer struct {
 	check     *widget.Check
 	label     *TappableLabel
 	deleteBtn *widget.Button
-	objects []fyne.CanvasObject
+	objects   []fyne.CanvasObject
 }
 
 func (t *treeViewRenderer) Destroy() {

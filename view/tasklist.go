@@ -15,14 +15,14 @@ type TaskList struct {
 	tasks []*data.Task
 }
 
-func NewTaskList(w fyne.Window, tasks []*data.Task) *TaskList {
+func NewTaskList(ctx *UiCtx, tasks []*data.Task) *TaskList {
 	taskList := &TaskList{}
 	taskList.List = widget.List{
 		Length: func() int {
 			return len(taskList.tasks)
 		},
 		CreateItem: func() fyne.CanvasObject {
-			return PrototypeTaskView(w, taskList)
+			return PrototypeTaskView(ctx, taskList)
 		},
 		UpdateItem: func(id widget.ListItemID, item fyne.CanvasObject) {
 			taskView := item.(*TaskView)

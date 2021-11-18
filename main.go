@@ -31,8 +31,12 @@ func main() {
 	w := a.NewWindow("TODO")
 	w.Resize(fyne.NewSize(640, 480))
 	w.CenterOnScreen()
+	ctx := &view.UiCtx{
+		App:        a,
+		MainWindow: w,
+	}
 
-	taskList := view.NewTaskList(w, tasks)
+	taskList := view.NewTaskList(ctx, tasks)
 	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
 		task := data.Task{}
 		nameEntry := widget.NewEntryWithData(binding.BindString(&task.Name))
@@ -60,6 +64,14 @@ func main() {
 	})
 
 	w.SetContent(content)
+	w.SetCloseIntercept(func() {
+		dialog.ShowConfirm("Save?", "Do you want to save before quitting?", func(doSave bool) {
+			if doSave {
+				saveData(taskList, w)
+			}
+			w.Close()
+		}, w)
+	})
 
 	w.ShowAndRun()
 }
@@ -68,7 +80,5 @@ func saveData(taskList *view.TaskList, w fyne.Window) {
 	tasks := taskList.Tasks()
 	if err := data.SaveTaskData(tasks); err != nil {
 		dialog.ShowError(err, w)
-		return
 	}
-	dialog.ShowInformation("Tasks saved", "Task data saved successfully", w)
 }
