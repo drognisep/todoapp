@@ -11,12 +11,15 @@ import (
 type TaskList struct {
 	widget.List
 
-	mux   sync.RWMutex
-	tasks []*data.Task
+	mux      sync.RWMutex
+	tasksPtr *[]*data.Task
+	tasks    []*data.Task
 }
 
-func NewTaskList(ctx *UiCtx, tasks []*data.Task) *TaskList {
-	taskList := &TaskList{}
+func NewTaskList(ctx *UiCtx, tasks *[]*data.Task) *TaskList {
+	taskList := &TaskList{
+		tasksPtr: tasks,
+	}
 	taskList.List = widget.List{
 		Length: func() int {
 			return len(taskList.tasks)
@@ -31,7 +34,7 @@ func NewTaskList(ctx *UiCtx, tasks []*data.Task) *TaskList {
 			})
 		},
 	}
-	for _, t := range tasks {
+	for _, t := range *tasks {
 		taskList.Append(t)
 	}
 	taskList.ExtendBaseWidget(taskList)
@@ -42,6 +45,7 @@ func (l *TaskList) Delete(id widget.ListItemID) {
 	l.mux.Lock()
 	curTasks := l.tasks
 	l.tasks = append(curTasks[:id], curTasks[id+1:]...)
+	*l.tasksPtr = l.tasks
 	l.mux.Unlock()
 	l.Refresh()
 }
@@ -52,6 +56,7 @@ func (l *TaskList) Append(task *data.Task) {
 	}
 	l.mux.Lock()
 	l.tasks = append(l.tasks, task)
+	*l.tasksPtr = l.tasks
 	l.mux.Unlock()
 	l.Refresh()
 }

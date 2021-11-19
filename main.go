@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	osdialog "github.com/sqweek/dialog"
@@ -22,7 +23,7 @@ func main() {
 			osdialog.Message("A fatal error occurred: %v", r).Title("Unexpected error").Error()
 		}
 	}()
-	tasks, err := data.LoadTaskData()
+	model, err := data.LoadTaskData()
 	if err != nil {
 		panic(fmt.Errorf("Failed to load task data: %v\n", err))
 	}
@@ -36,51 +37,62 @@ func main() {
 		MainWindow: w,
 	}
 
-	taskList := view.NewTaskList(ctx, tasks)
-	addBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
-		task := data.Task{}
-		nameEntry := widget.NewEntryWithData(binding.BindString(&task.Name))
-		nameEntry.Validator = view.TaskNameValidator
-		d := dialog.NewForm("Add Task", "Add", "Cancel", []*widget.FormItem{widget.NewFormItem("Name", nameEntry)}, func(confirm bool) {
-			if confirm {
-				taskList.Append(&task)
-			}
-		}, w)
-		d.Resize(fyne.NewSize(view.BigFloat, view.BigFloat))
-		d.Show()
-	})
-	addBtn.Importance = widget.HighImportance
-	saveBtn := widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), func() {
-		saveData(taskList, w)
-	})
-	content := container.NewBorder(container.NewHBox(addBtn, saveBtn), nil, nil, nil, taskList)
-
 	ctrlS := desktop.CustomShortcut{
 		KeyName:  fyne.KeyS,
 		Modifier: desktop.ControlModifier,
 	}
 	w.Canvas().AddShortcut(&ctrlS, func(_ fyne.Shortcut) {
-		saveData(taskList, w)
+		saveData(ctx, model)
 	})
 
-	w.SetContent(content)
+	w.SetContent(taskPanel(ctx, model))
 	w.SetCloseIntercept(func() {
-		saveData(taskList, w)
+		saveData(ctx, model)
 		w.Close()
 	})
 
 	w.ShowAndRun()
 }
 
-func saveData(taskList *view.TaskList, w fyne.Window) {
+func taskPanel(ctx *view.UiCtx, model *data.Model) *fyne.Container {
+	label := widget.NewLabel("Select or create a project to get started")
+	label.Alignment = fyne.TextAlignCenter
+	max := container.NewVBox(layout.NewSpacer(), label, layout.NewSpacer())
+
+	projectSelect := view.NewTaskListSelector(max)
+	for _, p := range model.Projects {
+		tl := view.NewTaskList(ctx, &p.Tasks)
+		projectSelect.AddTaskList(p.Name, tl)
+	}
+
+	addTaskBtn := widget.NewButtonWithIcon("New Task", theme.ContentAddIcon(), func() {
+		task := data.Task{}
+		nameEntry := widget.NewEntryWithData(binding.BindString(&task.Name))
+		nameEntry.Validator = view.TaskNameValidator
+		d := dialog.NewForm("Add Task", "Add", "Cancel", []*widget.FormItem{widget.NewFormItem("Name", nameEntry)}, func(confirm bool) {
+			if confirm {
+				projectSelect.ActiveList().Append(&task)
+			}
+		}, ctx.MainWindow)
+		d.Resize(fyne.NewSize(view.BigFloat, view.BigFloat))
+		d.Show()
+	})
+	addTaskBtn.Importance = widget.HighImportance
+	saveBtn := widget.NewButtonWithIcon("", theme.DocumentSaveIcon(), func() {
+		saveData(ctx, model)
+	})
+	content := container.NewBorder(container.NewHBox(widget.NewLabel("Project"), projectSelect, addTaskBtn, saveBtn), nil, nil, nil, projectSelect.ViewContainer())
+	return content
+}
+
+func saveData(ctx *view.UiCtx, model *data.Model) {
 	lbl := widget.NewLabel("Saving...")
 	inf := widget.NewProgressBarInfinite()
 	content := container.NewVBox(lbl, inf)
-	popup := widget.NewModalPopUp(content, w.Canvas())
-	tasks := taskList.Tasks()
+	popup := widget.NewModalPopUp(content, ctx.MainWindow.Canvas())
 	popup.Show()
 	defer popup.Hide()
-	if err := data.SaveTaskData(tasks); err != nil {
-		dialog.ShowError(err, w)
+	if err := data.SaveTaskData(model); err != nil {
+		dialog.ShowError(err, ctx.MainWindow)
 	}
 }

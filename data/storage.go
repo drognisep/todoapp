@@ -13,7 +13,7 @@ const (
 	dataFile = ".todo_file"
 )
 
-func LoadTaskData() ([]*Task, error) {
+func LoadTaskData() (*Model, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -22,27 +22,27 @@ func LoadTaskData() ([]*Task, error) {
 	data, err := os.ReadFile(path.Join(home, dataFile))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return []*Task{}, nil
+			return &Model{}, nil
 		}
 		return nil, errors.Wrap(err, "Failed to read from data file")
 	}
 	if len(data) == 0 {
-		return []*Task{}, nil
+		return &Model{}, nil
 	}
-	var tasks []*Task
-	if err := json.Unmarshal(data, &tasks); err != nil {
+	var model *Model
+	if err := json.Unmarshal(data, &model); err != nil {
 		return nil, errors.Wrap(err, "Invalid data file format")
 	}
-	return tasks, nil
+	return model, nil
 }
 
-func SaveTaskData(data []*Task) error {
+func SaveTaskData(model *Model) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
 	home = filepath.ToSlash(home)
-	jsonData, err := json.Marshal(&data)
+	jsonData, err := json.Marshal(&model)
 	if err != nil {
 		return errors.Wrap(err, "Failed to serialize JSON data")
 	}
