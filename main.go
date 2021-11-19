@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime/debug"
 	"todo/data"
 	"todo/view"
 
@@ -11,7 +12,6 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/driver/desktop"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	osdialog "github.com/sqweek/dialog"
@@ -20,6 +20,7 @@ import (
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
+			debug.PrintStack()
 			osdialog.Message("A fatal error occurred: %v", r).Title("Unexpected error").Error()
 		}
 	}()
@@ -46,24 +47,14 @@ func main() {
 	})
 
 	w.SetContent(taskPanel(ctx, model))
-	w.SetCloseIntercept(func() {
+	w.SetOnClosed(func() {
 		saveData(ctx, model)
-		w.Close()
 	})
-
 	w.ShowAndRun()
 }
 
 func taskPanel(ctx *view.UiCtx, model *data.Model) *fyne.Container {
-	label := widget.NewLabel("Select or create a project to get started")
-	label.Alignment = fyne.TextAlignCenter
-	max := container.NewVBox(layout.NewSpacer(), label, layout.NewSpacer())
-
-	projectSelect := view.NewTaskListSelector(max)
-	for _, p := range model.Projects {
-		tl := view.NewTaskList(ctx, &p.Tasks)
-		projectSelect.AddTaskList(p.Name, tl)
-	}
+	projectSelect := view.NewTaskListSelector(ctx, model)
 
 	addTaskBtn := widget.NewButtonWithIcon("New Task", theme.ContentAddIcon(), func() {
 		task := data.Task{}
