@@ -7,39 +7,86 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 var _ fyne.Widget = (*TaskView)(nil)
+var _ fyne.Draggable = (*TaskView)(nil)
 
 type TaskView struct {
 	widget.BaseWidget
-	window fyne.Window
-	parent fyne.CanvasObject
+	window        fyne.Window
+	listContainer *TaskList
+	id            widget.ListItemID
 
-	mux      sync.Mutex
+	mux      sync.RWMutex
 	renderer *treeViewRenderer
+	dragging bool
 }
 
-func PrototypeTaskView(ctx *UiCtx, parent fyne.CanvasObject) *TaskView {
+func (t *TaskView) Dragged(*fyne.DragEvent) {
+	t.mux.RLock()
+	dragging := t.dragging
+	id := t.id
+	t.mux.RUnlock()
+	if !dragging {
+		t.mux.Lock()
+		t.dragging = true
+		t.mux.Unlock()
+		t.listContainer.DragFrom(id)
+	}
+}
+
+func (t *TaskView) DragEnd() {
+	t.mux.Lock()
+	t.dragging = false
+	t.mux.Unlock()
+	t.listContainer.DragEnd()
+}
+
+func (t *TaskView) MouseIn(*desktop.MouseEvent) {
+	t.mux.RLock()
+	id := t.id
+	t.mux.RUnlock()
+	t.listContainer.DragTo(id)
+}
+func (t *TaskView) MouseMoved(*desktop.MouseEvent) {}
+func (t *TaskView) MouseOut()                      {}
+
+func PrototypeTaskView(ctx *UiCtx, parent *TaskList) *TaskView {
 	view := &TaskView{
-		window: ctx.MainWindow,
-		parent: parent,
+		window:        ctx.MainWindow,
+		listContainer: parent,
 	}
 	view.ExtendBaseWidget(view)
 	return view
 }
 
-func (t *TaskView) update(task *data.Task, onDelete func()) {
-	t.mux.Lock()
-	nameBinding := binding.BindString(&task.Name)
-	if t.renderer != nil {
-		t.renderer.check.Bind(binding.BindBool(&task.Done))
-		t.renderer.label.Bind(nameBinding)
-		t.renderer.deleteBtn.OnTapped = onDelete
+func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()) {
+	t.mux.RLock()
+	t.id = id
+	renderer := t.renderer
+	t.mux.RUnlock()
+	if renderer == nil {
+		return
 	}
-	t.renderer.label.OnDoubleTap = func() {
+	t.mux.Lock()
+	renderer.mux.Lock()
+	check, label, deleteBtn := renderer.check, renderer.label, renderer.deleteBtn
+	for _, obj := range []fyne.CanvasObject{check, label, deleteBtn} {
+		if obj == nil {
+			renderer.mux.Unlock()
+			t.mux.Unlock()
+			return
+		}
+	}
+	nameBinding := binding.BindString(&task.Name)
+	check.Bind(binding.BindBool(&task.Done))
+	label.Bind(nameBinding)
+	deleteBtn.OnTapped = onDelete
+	label.OnDoubleTap = func() {
 		newName := task.Name
 		entry := widget.NewEntryWithData(binding.BindString(&newName))
 		entryItem := widget.NewFormItem("Name", entry)
@@ -47,12 +94,13 @@ func (t *TaskView) update(task *data.Task, onDelete func()) {
 			if confirmed {
 				_ = nameBinding.Set(newName)
 				t.Refresh()
-				t.parent.Refresh()
+				t.listContainer.Refresh()
 			}
 		}, t.window)
 		d.Resize(fyne.NewSize(BigFloat, BigFloat))
 		d.Show()
 	}
+	renderer.mux.Unlock()
 	t.mux.Unlock()
 	t.Refresh()
 }
@@ -71,6 +119,7 @@ func (t *TaskView) CreateRenderer() fyne.WidgetRenderer {
 }
 
 type treeViewRenderer struct {
+	mux       sync.RWMutex
 	check     *widget.Check
 	label     *TappableLabel
 	deleteBtn *widget.Button
@@ -78,14 +127,13 @@ type treeViewRenderer struct {
 }
 
 func (t *treeViewRenderer) Destroy() {
-	t.check = nil
-	t.label = nil
-	t.deleteBtn = nil
 }
 
 func (t *treeViewRenderer) Layout(parent fyne.Size) {
 	height := t.MinSize().Height
 
+	t.mux.Lock()
+	defer t.mux.Unlock()
 	checkW := t.check.MinSize().Width
 	btnW := t.check.MinSize().Width
 	lblW := parent.Width - btnW - checkW
@@ -100,14 +148,33 @@ func (t *treeViewRenderer) Layout(parent fyne.Size) {
 }
 
 func (t *treeViewRenderer) MinSize() fyne.Size {
-	return runningWidth(t.check.MinSize(), t.label.MinSize(), t.deleteBtn.MinSize())
+	t.mux.RLock()
+	size := runningWidth(t.check.MinSize(), t.label.MinSize(), t.deleteBtn.MinSize())
+	t.mux.RUnlock()
+	return size
 }
 
 func (t *treeViewRenderer) Objects() []fyne.CanvasObject {
-	return t.objects
+	t.mux.RLock()
+	objs := t.objects
+	t.mux.RUnlock()
+	return objs
+}
+
+func (t *treeViewRenderer) AnyObjectNil() bool {
+	t.mux.RLock()
+	defer t.mux.RUnlock()
+	for _, obj := range []fyne.CanvasObject{t.check, t.label, t.deleteBtn} {
+		if obj == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func (t *treeViewRenderer) Refresh() {
+	t.mux.Lock()
+	defer t.mux.Unlock()
 	t.check.Refresh()
 	t.label.Refresh()
 	t.deleteBtn.Refresh()
