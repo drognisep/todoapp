@@ -46,7 +46,7 @@ func SaveTaskData(model *Model) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to serialize JSON data")
 	}
-	if err := os.WriteFile(path.Join(home, dataFile), jsonData, 0777); err != nil {
+	if err := os.WriteFile(path.Join(home, dataFile), jsonData, 0644); err != nil {
 		return errors.Wrap(err, "Failed to write task data")
 	}
 	return nil

@@ -127,11 +127,6 @@ type treeViewRenderer struct {
 }
 
 func (t *treeViewRenderer) Destroy() {
-	t.mux.Lock()
-	defer t.mux.Unlock()
-	t.check = nil
-	t.label = nil
-	t.deleteBtn = nil
 }
 
 func (t *treeViewRenderer) Layout(parent fyne.Size) {
