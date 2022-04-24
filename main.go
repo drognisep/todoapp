@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"runtime/debug"
 	"todo/data"
@@ -11,6 +12,9 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	osdialog "github.com/sqweek/dialog"
 )
+
+//go:embed Icon.png
+var icon []byte
 
 func main() {
 	defer func() {
@@ -28,6 +32,7 @@ func main() {
 	w := a.NewWindow("TODO")
 	w.Resize(fyne.NewSize(640, 480))
 	w.CenterOnScreen()
+	w.SetIcon(fyne.NewStaticResource("Icon.png", icon))
 	ctx := &view.UiCtx{
 		App:        a,
 		MainWindow: w,

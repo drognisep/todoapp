@@ -1,0 +1,8 @@
+Website = "https://saylorsolutions.com"
+
+[Details]
+  Icon = "Icon.png"
+  Name = "TODO"
+  ID = "com.saylorsolutions.todoapp"
+  Version = "0.1.0"
+  Build = 3
