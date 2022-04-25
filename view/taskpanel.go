@@ -24,7 +24,7 @@ func topControls(ctx *UiCtx, model *data.Model, projectSelect *TaskListSelector)
 		task := data.Task{}
 		nameEntry := widget.NewEntryWithData(binding.BindString(&task.Name))
 		nameEntry.Validator = taskNameValidator
-		descEntry := &widget.Entry{Wrapping: fyne.TextWrapWord}
+		descEntry := &widget.Entry{MultiLine: true, Wrapping: fyne.TextWrapWord}
 		descEntry.Bind(binding.BindString(&task.Description))
 		nameItem := widget.NewFormItem("Name", nameEntry)
 		descItem := widget.NewFormItem("Description", minHeightEntry(descEntry, descEntryMinHeight))

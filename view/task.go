@@ -91,7 +91,6 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 	label.OnDoubleTap = func() {
 		newName := task.Name
 		nameEntry := widget.NewEntryWithData(binding.BindString(&newName))
-		nameEntry.Wrapping = fyne.TextWrapWord
 		nameEntry.Hide()
 		nameLabel := newTappableLabel(newName)
 		nameLabel.OnDoubleTap = func() {
