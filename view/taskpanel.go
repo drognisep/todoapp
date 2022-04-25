@@ -24,7 +24,11 @@ func topControls(ctx *UiCtx, model *data.Model, projectSelect *TaskListSelector)
 		task := data.Task{}
 		nameEntry := widget.NewEntryWithData(binding.BindString(&task.Name))
 		nameEntry.Validator = TaskNameValidator
-		d := dialog.NewForm("Add Task", "Add", "Cancel", []*widget.FormItem{widget.NewFormItem("Name", nameEntry)}, func(confirm bool) {
+		descEntry := &widget.Entry{Wrapping: fyne.TextWrapWord}
+		descEntry.Bind(binding.BindString(&task.Description))
+		nameItem := widget.NewFormItem("Name", nameEntry)
+		descItem := widget.NewFormItem("Description", minHeightEntry(descEntry, 300))
+		d := dialog.NewForm("Add Task", "Add", "Cancel", []*widget.FormItem{nameItem, descItem}, func(confirm bool) {
 			if confirm {
 				projectSelect.ActiveList().Append(&task)
 			}
