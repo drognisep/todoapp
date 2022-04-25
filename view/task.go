@@ -1,6 +1,7 @@
 package view
 
 import (
+	"fyne.io/fyne/v2/container"
 	"sync"
 	"todo/data"
 
@@ -83,16 +84,48 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 		}
 	}
 	nameBinding := binding.BindString(&task.Name)
+	descBinding := binding.BindString(&task.Description)
 	check.Bind(binding.BindBool(&task.Done))
 	label.Bind(nameBinding)
 	deleteBtn.OnTapped = onDelete
 	label.OnDoubleTap = func() {
 		newName := task.Name
-		entry := widget.NewEntryWithData(binding.BindString(&newName))
-		entryItem := widget.NewFormItem("Name", entry)
-		d := dialog.NewForm("Edit Task", "Done", "Cancel", []*widget.FormItem{entryItem}, func(confirmed bool) {
+		nameEntry := widget.NewEntryWithData(binding.BindString(&newName))
+		nameEntry.Wrapping = fyne.TextWrapWord
+		nameEntry.Hide()
+		nameLabel := NewTappableLabel(newName)
+		nameLabel.OnDoubleTap = func() {
+			nameLabel.Hide()
+			nameEntry.Show()
+		}
+		newDesc := task.Description
+
+		descriptionEntry := &widget.Entry{MultiLine: true, Wrapping: fyne.TextWrapWord}
+		descriptionEntry.Bind(binding.BindString(&newDesc))
+		descriptionEntry.Hide()
+
+		btn := widget.NewButton("Add a description", func() {})
+		btn.Importance = widget.HighImportance
+		btn.OnTapped = func() {
+			descriptionEntry.Show()
+			btn.Hide()
+		}
+		descriptionMarkdown := NewTappableMarkdown(newDesc)
+		descriptionMarkdown.OnDoubleTap = func() {
+			descriptionMarkdown.Hide()
+			descriptionEntry.Show()
+		}
+		if newDesc == "" {
+			descriptionMarkdown.Hide()
+		} else {
+			btn.Hide()
+		}
+		summaryEntryItem := widget.NewFormItem("Name", container.NewVBox(nameLabel, nameEntry))
+		descEntryItem := widget.NewFormItem("Description", container.NewVBox(btn, descriptionMarkdown, minHeightEntry(descriptionEntry, 300)))
+		d := dialog.NewForm("Edit Task", "Done", "Cancel", []*widget.FormItem{summaryEntryItem, descEntryItem}, func(confirmed bool) {
 			if confirmed {
 				_ = nameBinding.Set(newName)
+				_ = descBinding.Set(newDesc)
 				t.Refresh()
 				t.listContainer.Refresh()
 			}

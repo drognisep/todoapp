@@ -3,6 +3,7 @@ package view
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/validation"
+	"fyne.io/fyne/v2/widget"
 )
 
 const (
@@ -23,4 +24,21 @@ func runningWidth(sizes ...fyne.Size) fyne.Size {
 		widthSum += sz.Width
 	}
 	return fyne.NewSize(widthSum, maxHeight)
+}
+
+type minHeightObj struct {
+	*widget.Entry
+
+	minHeight float32
+}
+
+func minHeightEntry(obj *widget.Entry, minHeight float32) fyne.Widget {
+	wid := &minHeightObj{Entry: obj, minHeight: minHeight}
+	wid.ExtendBaseWidget(wid)
+	return wid
+}
+
+func (mho *minHeightObj) MinSize() fyne.Size {
+	orig := mho.Entry.MinSize()
+	return fyne.NewSize(orig.Width, mho.minHeight)
 }
