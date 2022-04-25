@@ -32,7 +32,7 @@ This format may change at any time, without notice, so don't try to integrate wi
 There are a few things that I think would be neat to add to the application, that I may or may not do.
 Make an issue here for suggestions.
 
-### Task descriptions
+### [Task descriptions](https://github.com/drognisep/todoapp/issues/3)
 Add a task description for more extended documentation.
 The description should use Fyne's markdown rendering functionality.
 
