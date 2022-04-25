@@ -12,7 +12,10 @@ It supports projects and tasks to help support focus.
 * Switch between projects with the dropdown at the top.
 * Re-order tasks within a project in a way that makes sense, like to define priority.
 * Check tasks as done with the checkbox.
-* Update the task summary by double-clicking on the task's text.
+* Update task data by double-clicking on the task's text.
+  * Update the name by double-clicking on the label.
+  * Add a new description by clicking the "Add Description" button.
+  * Update an existing description by double-clicking on the description.
 
 ## Design priorities
 These are the guiding principles with which I'll add features (or not) to the app.
@@ -32,7 +35,7 @@ This format may change at any time, without notice, so don't try to integrate wi
 There are a few things that I think would be neat to add to the application, that I may or may not do.
 Make an issue here for suggestions.
 
-### [Task descriptions](https://github.com/drognisep/todoapp/issues/3)
+### ~~[Task descriptions](https://github.com/drognisep/todoapp/issues/3)~~
 Add a task description for more extended documentation.
 The description should use Fyne's markdown rendering functionality.
 
