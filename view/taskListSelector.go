@@ -163,7 +163,7 @@ func (s *TaskListSelector) ProjectMenu(ctx *UiCtx) *fyne.Menu {
 				s.SetSelected(project.Name)
 			}
 		}, ctx.MainWindow)
-		d.Resize(fyne.NewSize(BigFloat, BigFloat))
+		d.Resize(fyne.NewSize(bigFloat, bigFloat))
 		d.Show()
 	})
 	deleteProject := fyne.NewMenuItem("Delete", func() {
@@ -191,7 +191,7 @@ func (s *TaskListSelector) ProjectMenu(ctx *UiCtx) *fyne.Menu {
 				s.SetSelected(newName)
 			}
 		}, ctx.MainWindow)
-		d.Resize(fyne.NewSize(BigFloat, BigFloat))
+		d.Resize(fyne.NewSize(bigFloat, bigFloat))
 		d.Show()
 	})
 	return fyne.NewMenu("Project", newProject, deleteProject, renameProject)

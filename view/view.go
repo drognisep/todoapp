@@ -7,11 +7,12 @@ import (
 )
 
 const (
-	BigFloat float32 = 1_000.0
+	bigFloat           float32 = 1_000.0
+	descEntryMinHeight float32 = 300
 )
 
 var (
-	TaskNameValidator = validation.NewRegexp(`^[A-Za-z0-9 -_]+$`, "Must be alphanumeric, '-', '_', or spaces")
+	taskNameValidator = validation.NewRegexp(`^[A-Za-z0-9 -_]+$`, "Must be alphanumeric, '-', '_', or spaces")
 )
 
 func runningWidth(sizes ...fyne.Size) fyne.Size {

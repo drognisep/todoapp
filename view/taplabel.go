@@ -6,16 +6,16 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var _ fyne.DoubleTappable = (*TappableLabel)(nil)
+var _ fyne.DoubleTappable = (*tappableLabel)(nil)
 
-type TappableLabel struct {
+type tappableLabel struct {
 	widget.Label
 
 	OnDoubleTap func()
 }
 
-func NewTappableLabel(placeholder string) *TappableLabel {
-	lbl := &TappableLabel{
+func newTappableLabel(placeholder string) *tappableLabel {
+	lbl := &tappableLabel{
 		Label: widget.Label{
 			Text:      placeholder,
 			Alignment: fyne.TextAlignLeading,
@@ -28,20 +28,20 @@ func NewTappableLabel(placeholder string) *TappableLabel {
 	return lbl
 }
 
-func (t *TappableLabel) DoubleTapped(_ *fyne.PointEvent) {
+func (t *tappableLabel) DoubleTapped(_ *fyne.PointEvent) {
 	if fn := t.OnDoubleTap; fn != nil {
 		fn()
 	}
 }
 
-type TappableMarkdown struct {
+type tappableMarkdown struct {
 	widget.RichText
 
 	OnDoubleTap func()
 }
 
-func NewTappableMarkdown(placeholder string) *TappableMarkdown {
-	mkd := &TappableMarkdown{
+func newTappableMarkdown(placeholder string) *tappableMarkdown {
+	mkd := &tappableMarkdown{
 		RichText: widget.RichText{},
 	}
 	mkd.ParseMarkdown(placeholder)
@@ -51,12 +51,12 @@ func NewTappableMarkdown(placeholder string) *TappableMarkdown {
 	return mkd
 }
 
-func (t *TappableMarkdown) DoubleTapped(_ *fyne.PointEvent) {
+func (t *tappableMarkdown) DoubleTapped(_ *fyne.PointEvent) {
 	if fn := t.OnDoubleTap; fn != nil {
 		fn()
 	}
 }
 
-func (t *TappableMarkdown) MinSize() fyne.Size {
-	return fyne.NewSize(0, 300)
+func (t *tappableMarkdown) MinSize() fyne.Size {
+	return fyne.NewSize(0, descEntryMinHeight)
 }

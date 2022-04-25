@@ -23,17 +23,17 @@ func topControls(ctx *UiCtx, model *data.Model, projectSelect *TaskListSelector)
 	addTaskBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
 		task := data.Task{}
 		nameEntry := widget.NewEntryWithData(binding.BindString(&task.Name))
-		nameEntry.Validator = TaskNameValidator
+		nameEntry.Validator = taskNameValidator
 		descEntry := &widget.Entry{Wrapping: fyne.TextWrapWord}
 		descEntry.Bind(binding.BindString(&task.Description))
 		nameItem := widget.NewFormItem("Name", nameEntry)
-		descItem := widget.NewFormItem("Description", minHeightEntry(descEntry, 300))
+		descItem := widget.NewFormItem("Description", minHeightEntry(descEntry, descEntryMinHeight))
 		d := dialog.NewForm("Add Task", "Add", "Cancel", []*widget.FormItem{nameItem, descItem}, func(confirm bool) {
 			if confirm {
 				projectSelect.ActiveList().Append(&task)
 			}
 		}, ctx.MainWindow)
-		d.Resize(fyne.NewSize(BigFloat, BigFloat))
+		d.Resize(fyne.NewSize(bigFloat, bigFloat))
 		d.Show()
 	})
 	addTaskBtn.Importance = widget.HighImportance

@@ -93,7 +93,7 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 		nameEntry := widget.NewEntryWithData(binding.BindString(&newName))
 		nameEntry.Wrapping = fyne.TextWrapWord
 		nameEntry.Hide()
-		nameLabel := NewTappableLabel(newName)
+		nameLabel := newTappableLabel(newName)
 		nameLabel.OnDoubleTap = func() {
 			nameLabel.Hide()
 			nameEntry.Show()
@@ -110,7 +110,7 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 			descriptionEntry.Show()
 			btn.Hide()
 		}
-		descriptionMarkdown := NewTappableMarkdown(newDesc)
+		descriptionMarkdown := newTappableMarkdown(newDesc)
 		descriptionMarkdown.OnDoubleTap = func() {
 			descriptionMarkdown.Hide()
 			descriptionEntry.Show()
@@ -121,7 +121,7 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 			btn.Hide()
 		}
 		summaryEntryItem := widget.NewFormItem("Name", container.NewVBox(nameLabel, nameEntry))
-		descEntryItem := widget.NewFormItem("Description", container.NewVBox(btn, descriptionMarkdown, minHeightEntry(descriptionEntry, 300)))
+		descEntryItem := widget.NewFormItem("Description", container.NewVBox(btn, descriptionMarkdown, minHeightEntry(descriptionEntry, descEntryMinHeight)))
 		d := dialog.NewForm("Edit Task", "Done", "Cancel", []*widget.FormItem{summaryEntryItem, descEntryItem}, func(confirmed bool) {
 			if confirmed {
 				_ = nameBinding.Set(newName)
@@ -130,7 +130,7 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 				t.listContainer.Refresh()
 			}
 		}, t.window)
-		d.Resize(fyne.NewSize(BigFloat, BigFloat))
+		d.Resize(fyne.NewSize(bigFloat, bigFloat))
 		d.Show()
 	}
 	renderer.mux.Unlock()
@@ -141,7 +141,7 @@ func (t *TaskView) update(id widget.ListItemID, task *data.Task, onDelete func()
 func (t *TaskView) CreateRenderer() fyne.WidgetRenderer {
 	renderer := &treeViewRenderer{
 		check:     widget.NewCheck("", func(_ bool) {}),
-		label:     NewTappableLabel("Task description with enough space to see"),
+		label:     newTappableLabel("Task description with enough space to see"),
 		deleteBtn: widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {}),
 	}
 	renderer.objects = []fyne.CanvasObject{renderer.check, renderer.label, renderer.deleteBtn}
@@ -154,7 +154,7 @@ func (t *TaskView) CreateRenderer() fyne.WidgetRenderer {
 type treeViewRenderer struct {
 	mux       sync.RWMutex
 	check     *widget.Check
-	label     *TappableLabel
+	label     *tappableLabel
 	deleteBtn *widget.Button
 	objects   []fyne.CanvasObject
 }
