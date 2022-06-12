@@ -10,7 +10,7 @@ import (
 
 func zipFiles(zipFile string, filenames ...string) (err error) {
 	if len(filenames) == 0 {
-		return errors.New("must pass more than one filename to zipFiles")
+		return errors.New("must pass at least one filename to zipFiles")
 	}
 	defer func() {
 		if r := recover(); r != nil {
@@ -19,26 +19,29 @@ func zipFiles(zipFile string, filenames ...string) (err error) {
 	}()
 	out, err := os.Create(zipFile)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 	defer out.Close()
+	archive := zip.NewWriter(out)
+	defer archive.Close()
 
 	for _, filename := range filenames {
-		in, err := os.Open(filename)
-		if err != nil {
-			panic(err.Error())
-		}
-		defer in.Close()
-		archive := zip.NewWriter(out)
-		record, err := archive.Create(filename)
-		if err != nil {
-			panic(err)
-		}
+		func() {
+			in, err := os.Open(filename)
+			if err != nil {
+				panic(err)
+			}
+			defer in.Close()
+			record, err := archive.Create(filename)
+			if err != nil {
+				panic(err)
+			}
 
-		_, err = io.Copy(record, in)
-		if err != nil {
-			panic(err.Error())
-		}
+			_, err = io.Copy(record, in)
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 	return nil
 }
