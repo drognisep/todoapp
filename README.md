@@ -1,5 +1,12 @@
 # Todo App
 
+> **Note:**
+> As much as I would enjoy continuing to work on this, it's based on Fyne.
+> Fyne (among others) has made some great strides toward bringing GUI possibilities to Go, but in my opinion it has a long way to go to be production ready.
+> 
+> I'll be excited when that happens, but in the meantime I will be marking this repo as archived.
+> I hope this will help to clarify the level of time I'm willing to devote to Fyne-based projects at this time.
+
 Simple todo application built on [Fyne](https://fyne.io/).
 This is helpful to me when I need a simple, lightweight application for keeping me organized.
 This is pretty much a learning project for me and a way to work on something that solves my immediate problems.
